@@ -5,9 +5,3 @@ updates:
     directory: /
     schedule:
       interval: weekly
-
-  - package-ecosystem: gomod
-    directory: /
-    rebase-strategy: auto
-    schedule:
-      interval: weekly
