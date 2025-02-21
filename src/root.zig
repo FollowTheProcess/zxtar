@@ -43,6 +43,16 @@ pub const Archive = struct {
     pub fn read(self: Self, name: []const u8) ?[]const u8 {
         return self.files.get(strip(name));
     }
+
+    /// Delete removes a file from the archive.
+    pub fn delete(self: *Self, name: []const u8) void {
+        _ = self.files.remove(name);
+    }
+
+    /// Size returns the number of files contained in the archive.
+    pub fn size(self: Self) u32 {
+        return self.files.count();
+    }
 };
 
 /// Strip leading and trailing whitespace from the name.
@@ -54,20 +64,27 @@ test "add file" {
     var archive = Archive.init(testing.allocator, "A comment");
     defer archive.deinit();
 
+    try testing.expectEqual(archive.size(), 0);
+
     try archive.add("test", "some stuff here");
 
     try testing.expect(archive.contains("test"));
+    try testing.expectEqual(archive.size(), 1);
 }
 
 test "get file" {
     var archive = Archive.init(testing.allocator, "A comment");
     defer archive.deinit();
 
+    try testing.expectEqual(archive.size(), 0);
+
     try archive.add("test", "some stuff here");
     try archive.add("test2", "some more stuff here");
 
     try testing.expect(archive.contains("test"));
     try testing.expect(archive.contains("test2"));
+
+    try testing.expectEqual(archive.size(), 2);
 
     const got = archive.read("test");
     const got2 = archive.read("test2");
@@ -80,11 +97,37 @@ test "strip name" {
     var archive = Archive.init(testing.allocator, "A comment");
     defer archive.deinit();
 
+    try testing.expectEqual(archive.size(), 0);
+
     try archive.add("  some name  ", "text");
 
     try testing.expect(archive.contains("some name"));
 
+    try testing.expectEqual(archive.size(), 1);
+
     const got = archive.read("some name");
 
     try testing.expectEqualStrings("text", got.?);
+}
+
+test "delete file" {
+    var archive = Archive.init(testing.allocator, "A comment");
+    defer archive.deinit();
+
+    try testing.expectEqual(archive.size(), 0);
+
+    try archive.add("file1.txt", "Some contents here\n");
+
+    // It should exist
+    try testing.expect(archive.contains("file1.txt"));
+
+    try testing.expectEqual(archive.size(), 1);
+
+    // Remove it
+    archive.delete("file1.txt");
+
+    // It should no longer exist
+    try testing.expect(!archive.contains("file1.txt"));
+
+    try testing.expectEqual(archive.size(), 0);
 }
