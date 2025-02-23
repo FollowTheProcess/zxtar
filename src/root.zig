@@ -31,11 +31,11 @@ pub const Archive = struct {
         return self.files.contains(strip(name));
     }
 
-    /// Add a file to the archive.
+    /// Write a file to the archive.
     ///
-    /// Calling add with the name of a file that already exists will
+    /// Calling write with the name of a file that already exists will
     /// overwrite the contents of that file.
-    pub fn add(self: *Self, name: []const u8, contents: []const u8) !void {
+    pub fn write(self: *Self, name: []const u8, contents: []const u8) !void {
         try self.files.put(strip(name), contents);
     }
 
@@ -66,7 +66,7 @@ test "add file" {
 
     try testing.expectEqual(archive.size(), 0);
 
-    try archive.add("test", "some stuff here");
+    try archive.write("test", "some stuff here");
 
     try testing.expect(archive.contains("test"));
     try testing.expectEqual(archive.size(), 1);
@@ -78,8 +78,8 @@ test "get file" {
 
     try testing.expectEqual(archive.size(), 0);
 
-    try archive.add("test", "some stuff here");
-    try archive.add("test2", "some more stuff here");
+    try archive.write("test", "some stuff here");
+    try archive.write("test2", "some more stuff here");
 
     try testing.expect(archive.contains("test"));
     try testing.expect(archive.contains("test2"));
@@ -99,7 +99,7 @@ test "strip name" {
 
     try testing.expectEqual(archive.size(), 0);
 
-    try archive.add("  some name  ", "text");
+    try archive.write("  some name  ", "text");
 
     try testing.expect(archive.contains("some name"));
 
@@ -116,7 +116,7 @@ test "delete file" {
 
     try testing.expectEqual(archive.size(), 0);
 
-    try archive.add("file1.txt", "Some contents here\n");
+    try archive.write("file1.txt", "Some contents here\n");
 
     // It should exist
     try testing.expect(archive.contains("file1.txt"));
